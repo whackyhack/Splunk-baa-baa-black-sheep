@@ -1,0 +1,234 @@
+{
+    "title": "Baa, baa, black sheep",
+    "description": "",
+    "inputs": {
+        "input_aomCBhzN": {
+            "options": {
+                "defaultValue": "_line",
+                "items": [
+                    {
+                        "label": "No",
+                        "value": "_line"
+                    },
+                    {
+                        "label": "Yes",
+                        "value": "line"
+                    }
+                ],
+                "token": "line_tok"
+            },
+            "title": "show line #",
+            "type": "input.dropdown"
+        },
+        "input_srCKpU4Z": {
+            "options": {
+                "defaultValue": [
+                    "word"
+                ],
+                "items": [
+                    {
+                        "label": "Word",
+                        "value": "word"
+                    },
+                    {
+                        "label": "Part of speech",
+                        "value": "part_of_speech"
+                    },
+                    {
+                        "label": "Gender",
+                        "value": "gender"
+                    },
+                    {
+                        "label": "Quantity",
+                        "value": "numeral"
+                    },
+                    {
+                        "label": "Colour",
+                        "value": "colour"
+                    }
+                ],
+                "token": "show_tok"
+            },
+            "title": "also show",
+            "type": "input.multiselect"
+        }
+    },
+    "defaults": {
+        "dataSources": {
+            "ds.search": {
+                "options": {
+                    "queryParameters": {
+                        "earliest": "$global_time.earliest$",
+                        "latest": "$global_time.latest$"
+                    }
+                }
+            }
+        }
+    },
+    "visualizations": {
+        "viz_EMZ3COEI": {
+            "dataSources": {
+                "primary": "ds_QVX845Gl"
+            },
+            "options": {
+                "columnFormat": {
+                    "0": {
+                        "width": 76
+                    },
+                    "1": {
+                        "width": 84
+                    },
+                    "2": {
+                        "width": 82
+                    },
+                    "3": {
+                        "width": 64
+                    },
+                    "4": {
+                        "width": 72
+                    },
+                    "5": {
+                        "width": 67
+                    },
+                    "6": {
+                        "width": 77
+                    },
+                    "7": {
+                        "width": 60
+                    },
+                    "#": {
+                        "width": 90
+                    },
+                    "Attrib.": {
+                        "width": 426
+                    },
+                    "Total": {
+                        "width": 78
+                    },
+                    "group": {
+                        "width": 181
+                    }
+                },
+                "count": 15,
+                "showInternalFields": false,
+                "tableFormat": {
+                    "align": "left",
+                    "headerAlign": "left",
+                    "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByTheme)"
+                }
+            },
+            "title": "Word count analysis",
+            "type": "splunk.table"
+        },
+        "viz_tSF5dhkM": {
+            "dataSources": {
+                "primary": "ds_WZOCxJq5"
+            },
+            "options": {
+                "columnFormat": {
+                    "#": {
+                        "width": 60
+                    },
+                    "rhyme": {
+                        "width": 179
+                    }
+                },
+                "showInternalFields": false
+            },
+            "title": "Original rhyme",
+            "type": "splunk.table"
+        }
+    },
+    "dataSources": {
+        "ds_IO9aXdOa": {
+            "name": "analysis",
+            "options": {
+                "extend": "ds_WZOCxJq5",
+                "query": "| rex field=rhyme max_match=0 \"\\b(?<word>\\w+)\"\n| mvexpand word\n| eval part_of_speech = mvmap(word, case(\n  match(word, \"^(?i)(baa|sheep|wool|sir|bags*|one|masters*|dames*|boys*|lanes*)$\"), \"noun\",\n  match(word, \"^(?i)(you|who)\"), \"pronoun\",\n  match(word, \"^(?i)(have|lives*)\"), \"verb\",\n  match(word, \"^(?i)(black|three|full|little)\"), \"adjective\",\n  match(word, \"^(?i)(down)\"), \"adverb\",\n  match(word, \"^(?i)(for)\"), \"preposition\",\n  match(word, \"^(?i)(and)\"), \"conjunction\",\n  match(word, \"^(?i)(yes)\"), \"interjection\",\n  match(word, \"^(?i)(any|the)\"), \"determiner\")\n)\n| rex field=word \"\\b(?<stuff>(?i)sheep|you|wool|sir|bags*|masters*|dames*|who|lanes*|boys*)\\b\"\n```| eval gender = case(stuff IN (\"sir\", \"master\", \"boy\", \"ram\"), \"male\",\n  stuff IN (\"dame\", \"mastress\", \"girl\", \"ewe\"), \"female\")```\n| eval gender = case(match(word, \"^(?i)(sirs*|masters*|boys*|rams*)$\"), \"male\",\n  match(word, \"^(?i)(dames*|mistress|mistresses|girls*|ewes)$\"), \"female\")\n| eval gender = coalesce(gender, if(part_of_speech IN (\"noun\", \"pronoun\"), \"neutral\", null()))\n| eval colour = case(match(word, \"^(?i)(black)\"), \"black\")\n| rex field=word \"(?<quantity>(?i)any|one|two|three)\"\n| eval numeral = json_extract(json_object(\"any\", \">0\", \"one\", 1, \"two\", 2, \"three\", 3), lower(quantity))"
+            },
+            "type": "ds.chain"
+        },
+        "ds_QVX845Gl": {
+            "name": "word count",
+            "options": {
+                "extend": "ds_IO9aXdOa",
+                "query": "| eval word = lower(word)\n| tojson output_field=group $show_tok$\n| stats count(eval(mvcount(word))) as count by $line_tok$ group\n| xyseries group $line_tok$ count\n| spath input=group\n| foreach $show_tok$\n    [rename <<FIELD>> as _<<FIELD>>\n    | eval group = mvappend(group, if(isnull(_<<FIELD>>), null(),\n      \"(\" . substr(\"_<<FIELD>>\", 2, 3) . \")\" . _<<FIELD>>))]\n| eval group = mvjoin(mvindex(group, 1, -1), \", \")\n| rename group as \"Attrib.\"\n| sort _part_of_speech _gender\n| addtotals"
+            },
+            "type": "ds.chain"
+        },
+        "ds_RcEq4qqC": {
+            "name": "rhyme",
+            "options": {
+                "query": "| makeresults\n| fields - _time\n| eval rhyme = split(\"Baa, baa, black sheep,\nHave you any wool?\nYes, sir, yes, sir,\nThree bags full;\nOne for the master,\nAnd one for the dame,\nAnd one for the little boy\nWho lives down the lane.\", \"\n\")",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "type": "ds.search"
+        },
+        "ds_WZOCxJq5": {
+            "name": "rhyme in rows",
+            "options": {
+                "extend": "ds_RcEq4qqC",
+                "query": "| mvexpand rhyme\n| rename _mkv_child as $line_tok$\n"
+            },
+            "type": "ds.chain"
+        }
+    },
+    "layout": {
+        "globalInputs": [
+            "input_srCKpU4Z"
+        ],
+        "layoutDefinitions": {
+            "layout_1": {
+                "options": {
+                    "height": 960,
+                    "width": 1440
+                },
+                "structure": [
+                    {
+                        "item": "viz_tSF5dhkM",
+                        "position": {
+                            "h": 330,
+                            "w": 290,
+                            "x": 0,
+                            "y": 0
+                        },
+                        "type": "block"
+                    },
+                    {
+                        "item": "viz_EMZ3COEI",
+                        "position": {
+                            "h": 630,
+                            "w": 1250,
+                            "x": 300,
+                            "y": 0
+                        },
+                        "type": "block"
+                    },
+                    {
+                        "item": "input_aomCBhzN",
+                        "position": {
+                            "h": 82,
+                            "w": 198,
+                            "x": 0,
+                            "y": 330
+                        },
+                        "type": "input"
+                    }
+                ],
+                "type": "absolute"
+            }
+        },
+        "options": {},
+        "tabs": {
+            "items": [
+                {
+                    "label": "New tab",
+                    "layoutId": "layout_1"
+                }
+            ]
+        }
+    }
+}
