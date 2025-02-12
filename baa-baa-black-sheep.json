@@ -1,7 +1,39 @@
 {
     "title": "Baa, baa, black sheep",
-    "description": "",
+    "description": "A dashboard to illustrate some advanced text visualization techniques.  Some of them can be applied in graphic visualizations as well.",
     "inputs": {
+        "input_ME6cDuSS": {
+            "context": {
+                "formattedConfig": {
+                    "number": {
+                        "prefix": ""
+                    }
+                },
+                "formattedStatics": ">statics | formatByType(formattedConfig)",
+                "label": ">primary | seriesByName(\"key\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+                "statics": [
+                    [
+                        "No"
+                    ],
+                    [
+                        "_"
+                    ]
+                ],
+                "value": ">primary | seriesByName(\"value\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+            },
+            "dataSources": {
+                "primary": "ds_FNyESyxU"
+            },
+            "options": {
+                "defaultValue": [
+                    "_"
+                ],
+                "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+                "token": "sort_tok"
+            },
+            "title": "custom sort?",
+            "type": "input.multiselect"
+        },
         "input_aomCBhzN": {
             "options": {
                 "defaultValue": "_line",
@@ -20,6 +52,47 @@
             "title": "show line #",
             "type": "input.dropdown"
         },
+        "input_jVMuxyCP": {
+            "dataSources": {
+                "primary": "ds_oy8akG7f"
+            },
+            "options": {
+                "defaultValue": [
+                    "*"
+                ],
+                "items": [
+                    {
+                        "label": "All",
+                        "value": "*"
+                    }
+                ],
+                "token": "speech_tok"
+            },
+            "title": "Select parts of speech",
+            "type": "input.multiselect"
+        },
+        "input_nLwAK6ET": {
+            "options": {
+                "defaultValue": "_",
+                "items": [
+                    {
+                        "label": "No",
+                        "value": "_"
+                    },
+                    {
+                        "label": "Position",
+                        "value": "eval(_mkv_child + 1)"
+                    },
+                    {
+                        "label": "Word",
+                        "value": "word"
+                    }
+                ],
+                "token": "info_tok"
+            },
+            "title": "add info?",
+            "type": "input.dropdown"
+        },
         "input_srCKpU4Z": {
             "options": {
                 "defaultValue": [
@@ -29,10 +102,6 @@
                     {
                         "label": "Word",
                         "value": "word"
-                    },
-                    {
-                        "label": "Part of speech",
-                        "value": "part_of_speech"
                     },
                     {
                         "label": "Gender",
@@ -45,6 +114,18 @@
                     {
                         "label": "Colour",
                         "value": "colour"
+                    },
+                    {
+                        "label": "Person",
+                        "value": "person"
+                    },
+                    {
+                        "label": "Plurality",
+                        "value": "plurality"
+                    },
+                    {
+                        "label": "Part of speech",
+                        "value": "part_of_speech"
                     }
                 ],
                 "token": "show_tok"
@@ -70,40 +151,44 @@
             "dataSources": {
                 "primary": "ds_QVX845Gl"
             },
+            "description": "In this table, each cell begins with word count broken down by \"also show\"; if you choose to \"add info\", it will be displayed in parentheses.",
             "options": {
                 "columnFormat": {
                     "0": {
                         "width": 76
                     },
                     "1": {
-                        "width": 84
+                        "width": 142
                     },
                     "2": {
-                        "width": 82
+                        "width": 104
                     },
                     "3": {
-                        "width": 64
+                        "width": 95
                     },
                     "4": {
                         "width": 72
                     },
                     "5": {
-                        "width": 67
+                        "width": 88
                     },
                     "6": {
-                        "width": 77
+                        "width": 95
                     },
                     "7": {
-                        "width": 60
+                        "width": 83
+                    },
+                    "8": {
+                        "width": 104
                     },
                     "#": {
                         "width": 90
                     },
                     "Attrib.": {
-                        "width": 426
+                        "width": 305
                     },
                     "Total": {
-                        "width": 78
+                        "width": 71
                     },
                     "group": {
                         "width": 181
@@ -137,14 +222,53 @@
             },
             "title": "Original rhyme",
             "type": "splunk.table"
+        },
+        "viz_wzsDqdCc": {
+            "dataSources": {
+                "primary": "ds_CNkXn8VG"
+            },
+            "description": "In this table, each cell element begins with word position, then the word or attribute(s) selected in \"also show\"",
+            "options": {
+                "columnFormat": {
+                    "_line": {
+                        "width": 60
+                    },
+                    "adjective": {
+                        "width": 110
+                    },
+                    "line": {
+                        "width": 60
+                    }
+                }
+            },
+            "type": "splunk.table"
         }
     },
     "dataSources": {
+        "ds_CNkXn8VG": {
+            "name": "parts of speech",
+            "options": {
+                "extend": "ds_IO9aXdOa",
+                "query": "| search part_of_speech IN ($speech_tok$)\n| foreach $show_tok$\n    [eval annotation = mvappend(annotation, if(\"<<FIELD>>\" == \"word\", \"\", substr(\"(<<FIELD>>\", 1, 4) . \")\") . if(isnull(<<FIELD>>), \"🤷🏻\" , <<FIELD>>))]\n| rename $line_tok$ as _populated\n| eval display = (_mkv_child + 1) . \">\" . mvjoin(annotation, \", \")\n| chart list(display) over _populated by part_of_speech\n| eval line = mvrange(1, 9)\n| mvexpand line\n| foreach *\n    [eval <<FIELD>> = if((\"<<FIELD>>\" IN (\"line\", \"populated\", \"_mkv_child\")) OR line == _populated, <<FIELD>>, \"\")]\n| stats values(*) as * by line\n"
+            },
+            "type": "ds.chain"
+        },
+        "ds_FNyESyxU": {
+            "name": "sort token",
+            "options": {
+                "query": "| makeresults\n| fields - _time\n| eval value = split(\"$show_tok$\", \",\")\n| mvexpand value\n| eval key = upper(substr(value, 1, 1)) . mvjoin(split(substr(value, 2), \"_\"), \" \")\n| eval value = \"_\" . value",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "type": "ds.search"
+        },
         "ds_IO9aXdOa": {
             "name": "analysis",
             "options": {
                 "extend": "ds_WZOCxJq5",
-                "query": "| rex field=rhyme max_match=0 \"\\b(?<word>\\w+)\"\n| mvexpand word\n| eval part_of_speech = mvmap(word, case(\n  match(word, \"^(?i)(baa|sheep|wool|sir|bags*|one|masters*|dames*|boys*|lanes*)$\"), \"noun\",\n  match(word, \"^(?i)(you|who)\"), \"pronoun\",\n  match(word, \"^(?i)(have|lives*)\"), \"verb\",\n  match(word, \"^(?i)(black|three|full|little)\"), \"adjective\",\n  match(word, \"^(?i)(down)\"), \"adverb\",\n  match(word, \"^(?i)(for)\"), \"preposition\",\n  match(word, \"^(?i)(and)\"), \"conjunction\",\n  match(word, \"^(?i)(yes)\"), \"interjection\",\n  match(word, \"^(?i)(any|the)\"), \"determiner\")\n)\n| rex field=word \"\\b(?<stuff>(?i)sheep|you|wool|sir|bags*|masters*|dames*|who|lanes*|boys*)\\b\"\n```| eval gender = case(stuff IN (\"sir\", \"master\", \"boy\", \"ram\"), \"male\",\n  stuff IN (\"dame\", \"mastress\", \"girl\", \"ewe\"), \"female\")```\n| eval gender = case(match(word, \"^(?i)(sirs*|masters*|boys*|rams*)$\"), \"male\",\n  match(word, \"^(?i)(dames*|mistress|mistresses|girls*|ewes)$\"), \"female\")\n| eval gender = coalesce(gender, if(part_of_speech IN (\"noun\", \"pronoun\"), \"neutral\", null()))\n| eval colour = case(match(word, \"^(?i)(black)\"), \"black\")\n| rex field=word \"(?<quantity>(?i)any|one|two|three)\"\n| eval numeral = json_extract(json_object(\"any\", \">0\", \"one\", 1, \"two\", 2, \"three\", 3), lower(quantity))"
+                "query": "| rex field=rhyme max_match=0 \"\\b(?<word>\\w+)\"\n| mvexpand word\n| eval part_of_speech = mvmap(word, case(\n  match(word, \"^(?i)(baa|sheep|wool|sir|bags*|one|masters*|dames*|boys*|lanes*)$\"), \"noun\",\n  match(word, \"^(?i)(you|who)\"), \"pronoun\",\n  match(word, \"^(?i)(have|lives*)\"), \"verb\",\n  match(word, \"^(?i)(black|three|full|little)\"), \"adjective\",\n  match(word, \"^(?i)(down)\"), \"adverb\",\n  match(word, \"^(?i)(for)\"), \"preposition\",\n  match(word, \"^(?i)(and)\"), \"conjunction\",\n  match(word, \"^(?i)(yes)\"), \"interjection\",\n  match(word, \"^(?i)(any|the)\"), \"determiner\")\n)\n| eval person = mvmap(word, case(\n  match(word, \"^(?i)(you|have|sir)$\"), \"2nd\",\n  match(word, \"^(?i)(sheep|wool|one|master|dame|boy|who|lives)$\"), \"3rd\"))\n| eval plurality = mvmap(word, case(\n  match(word, \"^(?i)(baa|sheep|have|you|wool|sir|one|master|dame|boy|who|lives|lane)$\"), \"singular\",\n  match(word, \"^(?i)(three|bags)$\"), \"plural\"))\n| rex field=word \"\\b(?<stuff>(?i)sheep|you|wool|sir|bags*|masters*|dames*|who|lanes*|boys*)\\b\"\n| eval gender = case(match(word, \"^(?i)(sirs*|masters*|boys*|rams*)$\"), \"male\",\n  match(word, \"^(?i)(dames*|mistress|mistresses|girls*|ewes)$\"), \"female\")\n| eval gender = coalesce(gender, if(part_of_speech IN (\"noun\", \"pronoun\"), \"neutral\", null()))\n| eval colour = case(match(word, \"^(?i)(black)\"), \"black\")\n| rex field=word \"(?<quantity>(?i)any|one|two|three)\"\n| eval numeral = json_extract(json_object(\"any\", \">0\", \"one\", 1, \"two\", 2, \"three\", 3), lower(quantity))"
             },
             "type": "ds.chain"
         },
@@ -152,7 +276,7 @@
             "name": "word count",
             "options": {
                 "extend": "ds_IO9aXdOa",
-                "query": "| eval word = lower(word)\n| tojson output_field=group $show_tok$\n| stats count(eval(mvcount(word))) as count by $line_tok$ group\n| xyseries group $line_tok$ count\n| spath input=group\n| foreach $show_tok$\n    [rename <<FIELD>> as _<<FIELD>>\n    | eval group = mvappend(group, if(isnull(_<<FIELD>>), null(),\n      \"(\" . substr(\"_<<FIELD>>\", 2, 3) . \")\" . _<<FIELD>>))]\n| eval group = mvjoin(mvindex(group, 1, -1), \", \")\n| rename group as \"Attrib.\"\n| sort _part_of_speech _gender\n| addtotals"
+                "query": "| eval word = lower(word)\n| tojson output_field=group $show_tok$\n| stats count(eval(mvcount(word))) as count list($info_tok$) as info by $line_tok$ group\n| eval group = json_set(group, \"info\", info)\n| xyseries group $line_tok$ count\n| addtotals\n| spath input=group\n| eval info = \" (\" . coalesce(if(info == \"null\", null(), info), mvjoin('info{}', \", \")) . \")\"\n| foreach *\n    [eval <<FIELD>> = if(match(\"<<FIELD>>\", \"^\\d\"), '<<FIELD>>' . coalesce(info, \"\"), '<<FIELD>>')]\n| rename info* as _info*, group as _group\n| foreach $show_tok$\n    [eval Attrib. = mvappend('Attrib.', if(isnull(<<FIELD>>), null(),\n      \"(\" . substr(\"<<FIELD>>\", 1, 3) . \")\" . <<FIELD>>))\n    | rename <<FIELD>> as _<<FIELD>>]\n| sort $sort_tok$\n| eval Attrib. = mvjoin('Attrib.', \", \")\n| stats values(*) as * sum(Total) as Total by Attrib.\n"
             },
             "type": "ds.chain"
         },
@@ -171,7 +295,15 @@
             "name": "rhyme in rows",
             "options": {
                 "extend": "ds_RcEq4qqC",
-                "query": "| mvexpand rhyme\n| rename _mkv_child as $line_tok$\n"
+                "query": "| mvexpand rhyme\n| eval $line_tok$ = _mkv_child + 1\n"
+            },
+            "type": "ds.chain"
+        },
+        "ds_oy8akG7f": {
+            "name": "list speech",
+            "options": {
+                "extend": "ds_IO9aXdOa",
+                "query": "| fields part_of_speech\n| dedup part_of_speech\n| sort part_of_speech"
             },
             "type": "ds.chain"
         }
@@ -184,7 +316,7 @@
             "layout_1": {
                 "options": {
                     "height": 960,
-                    "width": 1440
+                    "width": 1500
                 },
                 "structure": [
                     {
@@ -201,7 +333,7 @@
                         "item": "viz_EMZ3COEI",
                         "position": {
                             "h": 630,
-                            "w": 1250,
+                            "w": 1200,
                             "x": 300,
                             "y": 0
                         },
@@ -216,6 +348,54 @@
                             "y": 330
                         },
                         "type": "input"
+                    },
+                    {
+                        "item": "input_ME6cDuSS",
+                        "position": {
+                            "h": 82,
+                            "w": 198,
+                            "x": 300,
+                            "y": 630
+                        },
+                        "type": "input"
+                    },
+                    {
+                        "item": "input_nLwAK6ET",
+                        "position": {
+                            "h": 82,
+                            "w": 198,
+                            "x": 500,
+                            "y": 630
+                        },
+                        "type": "input"
+                    }
+                ],
+                "type": "absolute"
+            },
+            "layout_w1NdLd6n": {
+                "options": {
+                    "width": 1500
+                },
+                "structure": [
+                    {
+                        "item": "viz_wzsDqdCc",
+                        "position": {
+                            "h": 650,
+                            "w": 1250,
+                            "x": 240,
+                            "y": 0
+                        },
+                        "type": "block"
+                    },
+                    {
+                        "item": "input_jVMuxyCP",
+                        "position": {
+                            "h": 82,
+                            "w": 230,
+                            "x": 0,
+                            "y": 0
+                        },
+                        "type": "input"
                     }
                 ],
                 "type": "absolute"
@@ -225,8 +405,12 @@
         "tabs": {
             "items": [
                 {
-                    "label": "New tab",
+                    "label": "Word count breakdown",
                     "layoutId": "layout_1"
+                },
+                {
+                    "label": "Part of speech view",
+                    "layoutId": "layout_w1NdLd6n"
                 }
             ]
         }
