@@ -1,0 +1,224 @@
+{
+    "title": "Rack View",
+    "description": "This is a mock rack view.  You can add additional info in \"also show\", and selectively rack population.",
+    "inputs": {
+        "input_1HiZN2kK": {
+            "dataSources": {
+                "primary": "ds_ynVyGl7K"
+            },
+            "options": {
+                "defaultValue": [
+                    "*"
+                ],
+                "items": [
+                    {
+                        "label": "All",
+                        "value": "*"
+                    }
+                ],
+                "token": "model_tok"
+            },
+            "title": "Models",
+            "type": "input.multiselect"
+        },
+        "input_NArRa7GX": {
+            "options": {
+                "defaultValue": [
+                    "_"
+                ],
+                "items": [
+                    {
+                        "label": "None",
+                        "value": "_"
+                    },
+                    {
+                        "label": "Tier",
+                        "value": "tier"
+                    },
+                    {
+                        "label": "Model",
+                        "value": "model"
+                    },
+                    {
+                        "label": "Temperature",
+                        "value": "temperature"
+                    }
+                ],
+                "token": "show_tok"
+            },
+            "title": "also show",
+            "type": "input.multiselect"
+        },
+        "input_QTYIvJQ3": {
+            "context": {
+                "formattedConfig": {
+                    "number": {
+                        "prefix": ""
+                    }
+                },
+                "formattedStatics": ">statics | formatByType(formattedConfig)",
+                "label": ">primary | seriesByName(\"tier\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+                "statics": [
+                    [
+                        "All"
+                    ],
+                    [
+                        "*"
+                    ]
+                ],
+                "value": ">primary | seriesByName(\"tier\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+            },
+            "dataSources": {
+                "primary": "ds_2inmWkC5"
+            },
+            "options": {
+                "defaultValue": "*",
+                "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
+                "token": "tier_tok"
+            },
+            "title": "Tier",
+            "type": "input.dropdown"
+        },
+        "input_W9VsFzlt": {
+            "context": {},
+            "dataSources": {
+                "primary": "ds_xJRH9Hc6"
+            },
+            "options": {
+                "defaultValue": [
+                    "*"
+                ],
+                "items": [
+                    {
+                        "label": "All",
+                        "value": "*"
+                    }
+                ],
+                "token": "rack_tok"
+            },
+            "title": "Racks",
+            "type": "input.multiselect"
+        }
+    },
+    "defaults": {
+        "dataSources": {
+            "ds.search": {
+                "options": {
+                    "queryParameters": {
+                        "earliest": "$global_time.earliest$",
+                        "latest": "$global_time.latest$"
+                    }
+                }
+            }
+        }
+    },
+    "visualizations": {
+        "viz_4yIJXvB8": {
+            "dataSources": {
+                "primary": "ds_S6VrDYx9"
+            },
+            "options": {
+                "columnFormat": {
+                    "rack_u": {
+                        "width": 60
+                    }
+                },
+                "count": 50,
+                "dataOverlayMode": "none",
+                "drilldown": "none",
+                "headerVisibility": "fixed",
+                "showInternalFields": false,
+                "showRowNumbers": false,
+                "tableFormat": {
+                    "align": "center",
+                    "headerAlign": "center"
+                }
+            },
+            "type": "splunk.table"
+        }
+    },
+    "dataSources": {
+        "ds_2inmWkC5": {
+            "name": "tier list",
+            "options": {
+                "extend": "ds_VDzaD8HL",
+                "query": "| fields tier\n| dedup tier\n| sort tier"
+            },
+            "type": "ds.chain"
+        },
+        "ds_S6VrDYx9": {
+            "name": "rack view",
+            "options": {
+                "extend": "ds_VDzaD8HL",
+                "query": "| search rack IN ($rack_tok$) tier = $tier_tok$ model IN (\"$model_tok$\")\n| eval temperature = case(temperature > 70, \"🔥\", temperature > 60, \"🥵\", true(), \"\") . temperature . \"℃\"\n| foreach host $show_tok$\n    [eval display = mvappend(display, <<FIELD>>)]\n| rename rack_u as populated\n| eval rack_u = mvrange(1, 43)\n| mvexpand rack_u\n| nomv display\n| eval display = if(populated == rack_u, display, \"\")\n| chart values(display) over rack_u by rack\n| sort - rack_u"
+            },
+            "type": "ds.chain"
+        },
+        "ds_VDzaD8HL": {
+            "name": "data emulation",
+            "options": {
+                "query": "| makeresults count=6\n| fields - _time\n| streamstats count as _count\n| eval _row = if(_count > 3, \"GMC\", \"JEEP\")\n| eval rack = _row . (1 + _count % 3)\n| eval rack_u = mvrange(1, 43)\n| mvexpand rack_u\n| streamstats count as _seq\n| eval _group_map = json_object(\"1\", \"AA\", \"2\", \"BB\", \"3\", \"CC\", \"4\", \"DD\")\n| eval group = json_extract(_group_map, tostring((_count * rack_u) % 11))\n| eval tier = case(_seq % 2 > 0, \"web\", _seq % 3 > 0, \"app\", true(), \"db\")\n| eval model = case(round(sqrt(_seq) % 5) == 0, \"Model A\", _seq % 4 > 0, \"Model T\", true(), \"F-150\")\n| eval temperature = 35 + _seq % 40\n| eval host = group . printf(\"%02d\", _count * rack_u % 64)\n| foreach $show_tok$\n    [eval <<FIELD>> = if(isnull(host), null(), <<FIELD>>)]\n``` data emulation above ```",
+                "queryParameters": {
+                    "earliest": "-24h@h",
+                    "latest": "now"
+                }
+            },
+            "type": "ds.search"
+        },
+        "ds_xJRH9Hc6": {
+            "name": "rack list",
+            "options": {
+                "extend": "ds_VDzaD8HL",
+                "query": "| fields rack\n| dedup rack\n| sort rack"
+            },
+            "type": "ds.chain"
+        },
+        "ds_ynVyGl7K": {
+            "name": "model list",
+            "options": {
+                "extend": "ds_VDzaD8HL",
+                "query": "| fields model\n| dedup model\n| sort model"
+            },
+            "type": "ds.chain"
+        }
+    },
+    "layout": {
+        "globalInputs": [
+            "input_NArRa7GX",
+            "input_W9VsFzlt",
+            "input_QTYIvJQ3",
+            "input_1HiZN2kK"
+        ],
+        "layoutDefinitions": {
+            "layout_1": {
+                "options": {
+                    "display": "auto",
+                    "height": 960,
+                    "width": 1440
+                },
+                "structure": [
+                    {
+                        "item": "viz_4yIJXvB8",
+                        "position": {
+                            "h": 895,
+                            "w": 1440,
+                            "x": 0,
+                            "y": 5
+                        },
+                        "type": "block"
+                    }
+                ],
+                "type": "absolute"
+            }
+        },
+        "options": {},
+        "tabs": {
+            "items": [
+                {
+                    "label": "New tab",
+                    "layoutId": "layout_1"
+                }
+            ]
+        }
+    }
+}
