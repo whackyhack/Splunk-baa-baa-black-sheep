@@ -9,3 +9,14 @@ This demo dashboard demonstrates a practical application of the "tower" view exe
 When the dashboard loads, only server names are displayed.  You can add model, temperature, etc., into the view.  You can also select racks or other attributes of interest, all on a 42-unit vertical ladder.
 
 This dashboard is tested in Splunk 9.4.0 Dashboard Studio but should be compatible with any versions of Dashboard Studio (starting Splunk 8.0).
+
+# Vulnerability report
+This demo dashboard demonstrates a practical application of the breakdown view exemplified in Baa, baa, black sheep.
+
+The column order is time line from right to left; i.e., left-most entries are the most recent.  Base breakdown is severity rating (based on CVSS score), vulnerability group (with the most severe vulnerability in the group displayed as group lead), and the exposure duration of the oldest vulnerability in the breakdown.  Servers are organized by silos.  At this time, the only additional breakdown is silo.
+
+Data cells display exposures in the breakdown, number of servers exposed to that breakdown.  By default, if there are more than one vulnerabilities in that breakdown, additional vulnerability counts (VIDs) are also displayed in the cell.  You can change that to display list of additional vulnerabilities.
+
+You can also select a single vulnerability group, or a single silo for analysis.
+
+This dashboard is tested in Splunk 9.4.0 Dashboard Studio but should be compatible with any versions of Dashboard Studio (starting Splunk 8.0).

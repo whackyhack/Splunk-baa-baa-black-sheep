@@ -1,0 +1,16 @@
+Title,VID,CVSS3_1_base,first_detected,group
+Leprosy,1,4.3,-800,bacteria
+Bubonic plague,2,8.1,-500,bacteria
+Smallpox,3,9.8,-400,virus
+Tuberculosis,4,7.2,-300,bacteria
+Influenza,5,6.5,-250,virus
+COVID-19,6,8.8,-80,virus
+Measles,7,8.2,-100,virus
+Malaria,8,6.8,-350,parasite
+Yellow fever,9,5.5,-30,virus
+Brain worm,11,9.9,-80,parasite
+Hepatitis A,10,7.8,-60,virus
+Ebola,12,8.0,-66,virus
+Meningitis (bacterial),13,9.9,-99,bacteria
+Tetanus,14,10.0,-180,bacteria
+Rabies,15,10.0,-120,virus
