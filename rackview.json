@@ -1,6 +1,6 @@
 {
     "title": "Rack View",
-    "description": "This is a mock rack view.  You can add additional info in \"also show\", and selectively rack population.",
+    "description": "This is a mock rack view.  You can add additional info in \"also show\", and selectively display rack population.",
     "inputs": {
         "input_1HiZN2kK": {
             "dataSources": {
