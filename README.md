@@ -11,7 +11,7 @@ When the dashboard loads, only server names are displayed.  You can add model, t
 This dashboard is tested in Splunk 9.4.0 Dashboard Studio but should be compatible with any versions of Dashboard Studio (starting Splunk 8.0).
 
 # Vulnerability report
-This demo dashboard demonstrates a practical application of the breakdown view exemplified in Baa, baa, black sheep.
+This demo dashboard demonstrates a practical application of the breakdown view exemplified in Baa, baa, black sheep.  Requires vulnerabilities.csv as lookup.
 
 The column order is time line from right to left; i.e., left-most entries are the most recent.  Base breakdown is severity rating (based on CVSS score), vulnerability group (with the most severe vulnerability in the group displayed as group lead), and the exposure duration of the oldest vulnerability in the breakdown.  Servers are organized by silos.  At this time, the only additional breakdown is silo.
 
