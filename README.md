@@ -17,6 +17,6 @@ The column order is time line from right to left; i.e., left-most entries are th
 
 Data cells display exposures in the breakdown, number of servers exposed to that breakdown.  By default, if there are more than one vulnerabilities in that breakdown, additional vulnerability counts (VIDs) are also displayed in the cell.  You can change that to display list of additional vulnerabilities.
 
-You can also select a single vulnerability group, or a single silo for analysis.
+Using the top of dashboard selectors, you can also select a single vulnerability breakdown, or a single silo for analysis.  Additionally, you can view more details about vulnerabilities in a particular breakdown, for example, which servers are exposed, suggested solution, compliance status, etc., by clicking on it.  Minimal functionality is implemented in the detailed view for now.
 
 This dashboard is tested in Splunk 9.4.0 Dashboard Studio but should be compatible with any versions of Dashboard Studio (starting Splunk 8.0).

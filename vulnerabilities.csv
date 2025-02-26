@@ -1,16 +1,16 @@
-Title,VID,CVSS3_1_base,first_detected,group
-Leprosy,1,4.3,-800,bacteria
-Bubonic plague,2,8.1,-500,bacteria
-Smallpox,3,9.8,-400,virus
-Tuberculosis,4,7.2,-300,bacteria
-Influenza,5,6.5,-250,virus
-COVID-19,6,8.8,-80,virus
-Measles,7,8.2,-100,virus
-Malaria,8,6.8,-350,parasite
-Yellow fever,9,5.5,-30,virus
-Brain worm,11,9.9,-80,parasite
-Hepatitis A,10,7.8,-60,virus
-Ebola,12,8.0,-66,virus
-Meningitis (bacterial),13,9.9,-99,bacteria
-Tetanus,14,10.0,-180,bacteria
-Rabies,15,10.0,-120,virus
+Title,VID,CVSS3_1_base,first_detected,group,Solution
+Leprosy,1,4.3,-800,bacteria,"Read Matthew 8:1–4 aloud into air vent, three times. Then inject 500mL holy water onto power supply unit."
+Bubonic plague,2,8.1,-500,bacteria,"Implant brown rat with Neurallink, then connect through Ethernet.  Apply 30V, 0.5 Hz, 15% duty-cycle pulses to rat's limb for 5 minutes."
+Smallpox,3,9.8,-400,virus,"Burn Ø20x200 red candle on top of server, simultaneously shoot red laser from bottom."
+Tuberculosis,4,7.2,-300,bacteria,Bath server in Mediterranean warm spring for 5 hours.
+Influenza,5,6.5,-250,virus,
+COVID-19,6,8.8,-80,virus,"Prepare sodium hypochlorite or high-concentration bleach. Hold one mouthful at a time, mix well with saliva, then spray onto hard drive."
+Measles,7,8.2,-100,virus,
+Malaria,8,6.8,-350,parasite,
+Yellow fever,9,5.5,-30,virus,
+Brain worm,11,9.9,-80,parasite,"Haul legally obtained Central Park roadkill into server room. Loosen CPU heat sink, then slide a 1mm slice of meat between CPU and the sink.  Alternatively, cut meat into 1cm cubes and feed them into power supply fan grill."
+Hepatitis A,10,7.8,-60,virus,
+Ebola,12,8.0,-66,virus,
+Meningitis (bacterial),13,9.9,-99,bacteria,
+Tetanus,14,10.0,-180,bacteria,Use a forked needle to pry open DIMM package till you see wafer.  Scratch the metal contact till the circuit disconnects.
+Rabies,15,10.0,-120,virus,No patch available.  Remove and power down.
