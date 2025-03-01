@@ -150,7 +150,7 @@
             "name": "rack view",
             "options": {
                 "extend": "ds_VDzaD8HL",
-                "query": "| search rack IN ($rack_tok$) tier = $tier_tok$ model IN (\"$model_tok$\")\n| eval temperature = case(temperature > 70, \"🔥\", temperature > 60, \"🥵\", true(), \"\") . temperature . \"℃\"\n| foreach host $show_tok$\n    [eval display = mvappend(display, <<FIELD>>)]\n| rename rack_u as populated\n| eval rack_u = mvrange(1, 43)\n| mvexpand rack_u\n| nomv display\n| eval display = if(populated == rack_u, display, \"\")\n| chart values(display) over rack_u by rack\n| sort - rack_u"
+                "query": "| search rack IN ($rack_tok$) tier = $tier_tok$\n| where model IN (split(\"$model_tok$\", \",\"))\n| eval temperature = case(temperature > 70, \"🔥\", temperature > 60, \"🥵\", true(), \"\") . temperature . \"℃\"\n| foreach host $show_tok$\n    [eval display = mvappend(display, <<FIELD>>)]\n| rename rack_u as populated\n| eval rack_u = mvrange(1, 43)\n| mvexpand rack_u\n| nomv display\n| eval display = if(populated == rack_u, display, \"\")\n| chart values(display) over rack_u by rack\n| sort - rack_u"
             },
             "type": "ds.chain"
         },
