@@ -1,5 +1,5 @@
 # Splunk-baa-baa-black-sheep
-This is a collection of dashboards to illustrate some Splunk search techniques, visualization concepts, and dashboard techniques.
+This is a collection of dashboards to illustrate some Splunk search techniques, visualization concepts, and dashboard techniques.  It is a companion for [Up Your Textual Viz with Splunk](https://whackyhack.wordpress.com/2025/03/11/up-your-textual-viz-with-splunk/).
 
 ## Baa, baa, black sheep
 In this demo dashboard, linguistic and semantic constructs in Baa, baa, black sheep are used to illustrate how "hidden" fields can be used to enhance visualization, especially (but not limited to) text visualization.  It also demonstrates some advanced text visualization techniques.
@@ -14,7 +14,7 @@ When the dashboard loads, only server names are displayed.  You can add model, t
 This dashboard is tested in Splunk 9.4.0 Dashboard Studio but should be compatible with any versions of Dashboard Studio (starting Splunk 8.0).
 
 ## Vulnerability report
-This demo dashboard demonstrates a practical application of the breakdown view exemplified in Baa, baa, black sheep.  Requires vulnerabilities.csv as lookup.
+This demo dashboard demonstrates a practical application of the breakdown view exemplified in Baa, baa, black sheep.  Requires [vulnerabilities.csv](vulnerabilities.csv) as lookup.
 
 The column order is time line from right to left; i.e., left-most entries are the most recent.  Base breakdown is severity rating (based on CVSS score), vulnerability group (with the most severe vulnerability in the group displayed as group lead), and the exposure duration of the oldest vulnerability in the breakdown.  Servers are organized by silos.  At this time, the only additional breakdown is silo.
 
