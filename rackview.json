@@ -3,19 +3,33 @@
     "description": "This is a mock rack view.  You can add additional info in \"also show\", and selectively display rack population.",
     "inputs": {
         "input_1HiZN2kK": {
+            "context": {
+                "formattedConfig": {
+                    "number": {
+                        "prefix": ""
+                    }
+                },
+                "formattedStatics": ">statics | formatByType(formattedConfig)",
+                "label": ">primary | seriesByName(\"label\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+                "statics": [
+                    [
+                        "All"
+                    ],
+                    [
+                        "*"
+                    ]
+                ],
+                "value": ">primary | seriesByName(\"model\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+            },
             "dataSources": {
                 "primary": "ds_ynVyGl7K"
             },
             "options": {
+                "clearDefaultOnSelection": true,
                 "defaultValue": [
                     "*"
                 ],
-                "items": [
-                    {
-                        "label": "All",
-                        "value": "*"
-                    }
-                ],
+                "items": ">frame(label, value) | prepend(formattedStatics) | objects()",
                 "token": "model_tok"
             },
             "title": "Models",
@@ -150,7 +164,7 @@
             "name": "rack view",
             "options": {
                 "extend": "ds_VDzaD8HL",
-                "query": "| search rack IN ($rack_tok$) tier = $tier_tok$\n| where model IN (split(\"$model_tok$\", \",\"))\n| eval temperature = case(temperature > 70, \"🔥\", temperature > 60, \"🥵\", true(), \"\") . temperature . \"℃\"\n| foreach host $show_tok$\n    [eval display = mvappend(display, <<FIELD>>)]\n| rename rack_u as populated\n| eval rack_u = mvrange(1, 43)\n| mvexpand rack_u\n| nomv display\n| eval display = if(populated == rack_u, display, \"\")\n| chart values(display) over rack_u by rack\n| sort - rack_u"
+                "query": "| search rack IN ($rack_tok$) tier = $tier_tok$\n  model IN ($model_tok$)\n| eval temperature = case(temperature > 70, \"🔥\", temperature > 60, \"🥵\", true(), \"\") . temperature . \"℃\"\n| foreach host $show_tok$\n    [eval display = mvappend(display, <<FIELD>>)]\n| rename rack_u as populated\n| eval rack_u = mvrange(1, 43)\n| mvexpand rack_u\n| nomv display\n| eval display = if(populated == rack_u, display, \"\")\n| chart values(display) over rack_u by rack\n| sort - rack_u"
             },
             "type": "ds.chain"
         },
@@ -177,7 +191,7 @@
             "name": "model list",
             "options": {
                 "extend": "ds_VDzaD8HL",
-                "query": "| fields model\n| dedup model\n| sort model"
+                "query": "| dedup model\n| eval label = model\n| eval model = \"\\\"\" . model . \"\\\"\"\n| sort model"
             },
             "type": "ds.chain"
         }
@@ -203,7 +217,7 @@
                             "h": 895,
                             "w": 1440,
                             "x": 0,
-                            "y": 5
+                            "y": 0
                         },
                         "type": "block"
                     }
